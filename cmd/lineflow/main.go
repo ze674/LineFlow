@@ -3,7 +3,7 @@ package main
 import (
 	"LineFlow/internal/adapter/storage/mem"
 	"LineFlow/internal/service/productType"
-
+	"LineFlow/internal/service/task"
 	"LineFlow/utils/logger"
 )
 
@@ -12,16 +12,26 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer log.Sync()
 
 	log.Info("Hello, World!")
 	storage := mem.New()
+	taskService := task.NewService(storage)
 	productTypeService := productType.NewService(storage)
 
-	pr, err := productTypeService.GetProductTypeByID(1)
+	taskList, err := taskService.GetAllTasks()
 	if err != nil {
-		panic(err)
+		log.Error(err)
+	}
+	for _, t := range taskList {
+		pt, err := productTypeService.GetProductTypeByID(t.ProductTypeID)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		log.Info(pt)
 	}
 
-	println(pr.Name)
+	log.Info("Bye, World!")
 
 }
